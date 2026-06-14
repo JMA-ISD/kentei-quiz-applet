@@ -189,3 +189,202 @@
         }
 
         /* デカすぎるスタート＆リスタートボタン */
+        .btn-mega-action {
+            width: 100%;
+            max-width: 500px;
+            padding: 22px 40px;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fff;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.4);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-align: center;
+        }
+        .btn-mega-action:active {
+            transform: scale(0.96);
+        }
+
+        /* 結果発表画面の特別装飾 */
+        .score-display {
+            font-size: 6.5rem;
+            font-weight: 900;
+            color: #ffcc00;
+            text-shadow: 0 5px 20px rgba(255, 204, 0, 0.3);
+            margin: 2vh 0;
+        }
+        .comment-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-bottom: 3vh;
+            max-width: 90%;
+            text-align: center;
+            white-space: pre-line; /* 改行を有効にする */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fullscreen-container">
+        
+        <div id="start-screen" class="screen-wrapper">
+            <div class="brand-logo-zone">
+                <div class="logo-mark">
+                    <span class="placeholder-text">【ここにロゴマークのSVGが入ります】</span>
+                </div>
+                <div class="logo-type">
+                    <span class="placeholder-text">【ここにロゴタイプのSVGが入ります】</span>
+                </div>
+            </div>
+
+            <h1 class="main-title">🚀 チャレンジクイズラリー</h1>
+            <p class="catchphrase">全5問に答えて、限定ノベルティを手に入れよう！<br>どなたでもお気軽にご参加ください。</p>
+            <button class="btn-mega-action" onclick="startQuiz()">クイズに挑戦する</button>
+        </div>
+
+        <div id="quiz-screen" class="screen-wrapper hide">
+            <div class="quiz-header">
+                <span class="progress-badge" id="progress-text">Q. 1 / 5</span>
+            </div>
+            <div class="question-zone">
+                <div class="question-text" id="question-text">ここに巨大な問題文が表示されます</div>
+            </div>
+            <div class="choices-zone" id="choices-container">
+                </div>
+        </div>
+
+        <div id="result-screen" class="screen-wrapper hide">
+            <h1 class="main-title">🎉 終了！お疲れ様でした</h1>
+            <div class="score-display" id="result-score">5 / 5</div>
+            <div class="comment-display" id="result-comment">素晴らしい！全問正解です！スタッフに画面を見せて景品を受け取ってね！</div>
+            <button class="btn-mega-action" onclick="resetQuiz()">最初に戻る</button>
+        </div>
+
+    </div>
+
+    <script>
+        // クイズデータ
+        const quizData = [
+          {
+            question: "当社の主力製品「AI-アシスト」が誕生したのは何年でしょう？",
+            choices: ["👉 2018年", "👉 2021年", "👉 2024年"],
+            correct: 1
+          },
+          {
+            question: "当社のロゴマークの「青色」が表現しているものはどれ？",
+            choices: ["👉 信頼と技術力", "👉 豊かな海", "👉 スピード感"],
+            correct: 0
+          },
+          {
+            question: "今年、新しくリリースされた新機能の名称は？",
+            choices: ["👉 スマート・アナリティクス", "👉 クラウド・コネクト", "👉 セキュリティ・シールド"],
+            correct: 0 
+          },
+          {
+            question: "当社のオフィスは全国に何拠点あるでしょう？",
+            choices: ["👉 2拠点", "👉 4拠点", "👉 6拠点"],
+            correct: 1
+          },
+          {
+            question: "私たちの企業理念（ミッション）のキーワードは次のうちどれ？",
+            choices: ["👉 未来を創る", "👉 常識を疑う", "👉 テクノロジーで笑顔に"],
+            correct: 2
+          }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let autoResetTimer = null;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
+        
+        const resultScore = document.getElementById('result-score');
+        const resultComment = document.getElementById('result-comment');
+
+        function startQuiz() {
+            startScreen.classList.add('hide');
+            resultScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const currentQuiz = quizData[currentQuestionIndex];
+            progressText.innerText = `Q. ${currentQuestionIndex + 1} / ${quizData.length}`;
+            questionText.innerText = currentQuiz.question;
+            
+            choicesContainer.innerHTML = '';
+            currentQuiz.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.innerText = choice;
+                button.classList.add('btn-choice');
+                button.addEventListener('click', () => selectAnswer(index));
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex) {
+            const currentQuiz = quizData[currentQuestionIndex];
+            if (selectedIndex === currentQuiz.correct) {
+                score++;
+            }
+            
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hide');
+            resultScreen.classList.remove('hide');
+            
+            resultScore.innerText = `${score} / ${quizData.length}`;
+            
+            if (score === quizData.length) {
+                resultComment.innerText = "全問正解！素晴らしい！\nスタッフにこの画面を見せて、限定ノベルティをGETしてください！";
+            } else if (score >= 3) {
+                resultComment.innerText = "お見事！高得点です！\nブースのスタッフに声をかけて、記念品を受け取ってね！";
+            } else {
+                resultComment.innerText = "ご参加ありがとうございます！\nもう一度チャレンジしてパーフェクトを目指そう！";
+            }
+
+            autoResetTimer = setTimeout(() => {
+                resetQuiz();
+            }, 30000);
+        }
+
+        function resetQuiz() {
+            if (autoResetTimer) {
+                clearTimeout(autoResetTimer);
+            }
+            resultScreen.classList.add('hide');
+            quizScreen.classList.add('hide');
+            startScreen.classList.remove('hide');
+        }
+
+        // PWA Service Worker 登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA準備完了:', reg.scope))
+                    .catch(err => console.log('PWA登録失敗:', err));
+            });
+        }
+    </script>
+</body>
+</html>
