@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>マーケティング検定　トライアルクイズ</title>
+    <title>展示会クイズラリー</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3c72">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
-        /* 全画面を固定し、スクロールを完全に禁止 */
+        /* 基本リセット */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,369 +20,267 @@
             -webkit-touch-callout: none;
         }
 
-        /* 画面の縦幅(vh)を基準に固定し、絶対に潰れないようにする */
+        /* 画面全体の固定 */
         html, body {
             width: 100%;
-            height: 100vh;
+            height: 100%;
             overflow: hidden;
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-        }
-
-        body {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #fff;
-        }
-
-        /* 全体を覆うメインコンテナ（画面の縦幅を100%使う） */
-        .fullscreen-container {
-            width: 100%;
-            height: 100vh;
-            max-width: 1024px;
-            margin: 0 auto;
-            padding: 6vh 6vw; /* 上下の余白もvhで最適化 */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .hide {
-            display: none !important;
-        }
-
-        /* ----------------------------------
-         * 各画面の共通レイアウト（flex-growで縦に引き伸ばす）
-         * ---------------------------------- */
-        .screen-wrapper {
-            width: 100%;
-            flex-grow: 1; /* 潰れを防止し、画面の残りの高さを目一杯使う */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* 上中下に綺麗に要素を振り分ける */
-            align-items: center;
-        }
-
-        /* ----------------------------------
-         * ロゴ・ロゴタイプ配置エリア
-         * ---------------------------------- */
-        .brand-logo-zone {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5vh;
-            width: 100%;
-        }
-
-        .logo-mark {
-            height: 10vh;
-            max-height: 100px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        .logo-type {
-            height: 4vh;
-            max-height: 40px;
+        /* コンテンツが間延びしないための外枠（max-width/max-heightでガード） */
+        .app-boundary {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;  /* 横に広がりすぎない */
+            max-height: 900px; /* 縦に間延びしすぎない */
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 上・中・下にバランスよく配置 */
+            align-items: center;
+            position: relative;
+        }
+
+        .hide { display: none !important; }
+
+        /* --- スタート画面のロゴ・タイトルエリア --- */
+        .header-logo-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* ここがH1相当のロゴタイプ枠 */
+        .main-logo-type {
+            width: 100%;
+            height: 15vh;
+            max-height: 120px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
-        .brand-logo-zone svg {
+        
+        .main-logo-type svg {
             width: auto;
             height: 100%;
             max-width: 100%;
         }
 
-        /* 開発用の一時的な点線枠 */
-        .placeholder-text {
+        /* 仮の点線枠（SVGを貼ったら消してください） */
+        .placeholder-svg {
+            border: 2px dashed rgba(255,255,255,0.3);
+            padding: 20px;
+            color: rgba(255,255,255,0.5);
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.4);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            padding: 8px 16px;
-            border-radius: 8px;
+            border-radius: 10px;
         }
 
-        /* ----------------------------------
-         * タイトル・文字の装飾
-         * ---------------------------------- */
-        h1.main-title {
-            font-size: 4rem;
-            font-weight: 900;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            color: #fff;
-            letter-spacing: 2px;
-            line-height: 1.3;
+        /* --- 文字装飾 --- */
+        .catchphrase {
+            font-size: 1.6rem;
+            line-height: 1.6;
             text-align: center;
-            margin: 2vh 0;
-        }
-
-        p.catchphrase {
-            font-size: 1.5rem;
             color: #e0e6ed;
-            line-height: 1.8;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            text-align: center;
-            margin-bottom: 2vh;
+            margin-bottom: 40px;
         }
 
-        /* 進行状況（上部に固定） */
-        .quiz-header {
-            width: 100%;
-            text-align: center;
-        }
         .progress-badge {
-            display: inline-block;
-            background-color: rgba(255, 255, 255, 0.15);
-            padding: 8px 24px;
+            background: rgba(255,255,255,0.15);
+            padding: 10px 30px;
             border-radius: 50px;
             font-size: 1.2rem;
             font-weight: bold;
-            letter-spacing: 2px;
-            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;
         }
 
-        /* 問題文エリア（画面中央にどっしり構える） */
-        .question-zone {
-            width: 100%;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2vh 0;
-        }
         .question-text {
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             font-weight: bold;
-            line-height: 1.5;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
             text-align: center;
+            line-height: 1.4;
+            margin-bottom: 40px;
         }
 
-        /* 選択肢ボタン（画面下部に綺麗に収まる） */
-        .choices-zone {
+        /* --- ボタンデザイン --- */
+        .choices-container {
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .btn-choice {
-            display: block;
             width: 100%;
-            padding: 3vh 30px; /* 高さを微調整 */
-            margin-bottom: 2vh;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            background: #fff;
             border: none;
-            border-radius: 18px;
-            font-size: 1.6rem;
+            border-radius: 15px;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #1e3c72;
-            cursor: pointer;
             text-align: left;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: all 0.1s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
         }
+
         .btn-choice:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
             background: #ffcc00;
             color: #000;
         }
-        .btn-choice:last-child {
-            margin-bottom: 0;
-        }
 
-        /* デカすぎるスタート＆リスタートボタン */
-        .btn-mega-action {
+        .btn-start {
             width: 100%;
-            max-width: 500px;
-            padding: 22px 40px;
-            font-size: 2rem;
-            font-weight: 900;
+            max-width: 400px;
+            padding: 25px;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
             color: #fff;
-            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
             border: none;
             border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.4);
-            cursor: pointer;
-            transition: all 0.1s ease;
-            text-align: center;
-        }
-        .btn-mega-action:active {
-            transform: scale(0.96);
-        }
-
-        /* 結果発表画面の特別装飾 */
-        .score-display {
-            font-size: 6.5rem;
-            font-weight: 900;
-            color: #ffcc00;
-            text-shadow: 0 5px 20px rgba(255, 204, 0, 0.3);
-            margin: 2vh 0;
-        }
-        .comment-display {
             font-size: 1.8rem;
             font-weight: bold;
-            line-height: 1.6;
-            margin-bottom: 3vh;
-            max-width: 90%;
-            text-align: center;
-            white-space: pre-line; /* 改行を有効にする */
+            box-shadow: 0 10px 20px rgba(255,65,108,0.4);
+        }
+
+        .btn-start:active { transform: scale(0.95); }
+
+        /* 結果画面 */
+        .score-num {
+            font-size: 7rem;
+            font-weight: 900;
+            color: #ffcc00;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
 
-    <div class="fullscreen-container">
+    <div class="app-boundary">
         
-        <div id="start-screen" class="screen-wrapper">
-            <div class="brand-logo-zone">
-                <div class="logo-mark">
-                    <span class="placeholder-text">【ここにロゴマークのSVGが入ります】</span>
-                </div>
-                <div class="logo-type">
-                    <span class="placeholder-text">【ここにロゴタイプのSVGが入ります】</span>
-                </div>
+        <div id="start-screen" class="header-logo-area">
+            <div class="main-logo-type">
+                <span class="placeholder-svg">ここにロゴタイプSVGを貼り付け</span>
             </div>
-
-            <h1 class="main-title">トライアルクイズ</h1>
-            <p class="catchphrase">3級レベルの全5問に答えて、実力を図ろう！<br>合格できますか？</p>
-            <button class="btn-mega-action" onclick="startQuiz()">クイズに挑戦する</button>
+            <p class="catchphrase">
+                ブース来場記念クイズ！<br>
+                全5問に答えてノベルティをGETしよう
+            </p>
+            <button class="btn-start" onclick="startQuiz()">挑戦を始める</button>
         </div>
 
-        <div id="quiz-screen" class="screen-wrapper hide">
-            <div class="quiz-header">
-                <span class="progress-badge" id="progress-text">Q. 1 / 5</span>
-            </div>
-            <div class="question-zone">
-                <div class="question-text" id="question-text">ここに巨大な問題文が表示されます</div>
-            </div>
-            <div class="choices-zone" id="choices-container">
+        <div id="quiz-screen" class="hide" style="width:100%; text-align:center;">
+            <div class="progress-badge" id="progress-text">Q 1 / 5</div>
+            <div class="question-text" id="question-text">問題文がここに入ります</div>
+            <div class="choices-container" id="choices-container">
                 </div>
         </div>
 
-        <div id="result-screen" class="screen-wrapper hide">
-            <h1 class="main-title">🎉 終了！お疲れ様でした</h1>
-            <div class="score-display" id="result-score">5 / 5</div>
-            <div class="comment-display" id="result-comment">素晴らしい！全問正解です！スタッフに画面を見せて景品を受け取ってね！</div>
-            <button class="btn-mega-action" onclick="resetQuiz()">最初に戻る</button>
+        <div id="result-screen" class="hide" style="width:100%; text-align:center;">
+            <h2 style="font-size:2.5rem;">RESULT</h2>
+            <div class="score-num" id="result-score">0 / 5</div>
+            <p id="result-comment" style="font-size:1.4rem; margin-bottom:40px; line-height:1.6;"></p>
+            <button class="btn-start" onclick="resetQuiz()">最初に戻る</button>
         </div>
 
     </div>
 
     <script>
-        // クイズデータ
         const quizData = [
           {
             question: "当社の主力製品「AI-アシスト」が誕生したのは何年でしょう？",
-            choices: ["👉 2018年", "👉 2021年", "👉 2024年"],
+            choices: ["2018年", "2021年", "2024年"],
             correct: 1
           },
           {
             question: "当社のロゴマークの「青色」が表現しているものはどれ？",
-            choices: ["👉 信頼と技術力", "👉 豊かな海", "👉 スピード感"],
+            choices: ["信頼と技術力", "豊かな海", "スピード感"],
             correct: 0
           },
           {
             question: "今年、新しくリリースされた新機能の名称は？",
-            choices: ["👉 スマート・アナリティクス", "👉 クラウド・コネクト", "👉 セキュリティ・シールド"],
+            choices: ["スマート・アナリティクス", "クラウド・コネクト", "セキュリティ・シールド"],
             correct: 0 
           },
           {
             question: "当社のオフィスは全国に何拠点あるでしょう？",
-            choices: ["👉 2拠点", "👉 4拠点", "👉 6拠点"],
+            choices: ["2拠点", "4拠点", "6拠点"],
             correct: 1
           },
           {
             question: "私たちの企業理念（ミッション）のキーワードは次のうちどれ？",
-            choices: ["👉 未来を創る", "👉 常識を疑う", "👉 テクノロジーで笑顔に"],
+            choices: ["未来を創る", "常識を疑う", "テクノロジーで笑顔に"],
             correct: 2
           }
         ];
 
-        let currentQuestionIndex = 0;
+        let currentIdx = 0;
         let score = 0;
-        let autoResetTimer = null;
+        let timer = null;
 
-        const startScreen = document.getElementById('start-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const resultScreen = document.getElementById('result-screen');
-        
-        const progressText = document.getElementById('progress-text');
-        const questionText = document.getElementById('question-text');
-        const choicesContainer = document.getElementById('choices-container');
-        
-        const resultScore = document.getElementById('result-score');
-        const resultComment = document.getElementById('result-comment');
+        const startS = document.getElementById('start-screen');
+        const quizS = document.getElementById('quiz-screen');
+        const resultS = document.getElementById('result-screen');
 
         function startQuiz() {
-            startScreen.classList.add('hide');
-            resultScreen.classList.add('hide');
-            quizScreen.classList.remove('hide');
-            currentQuestionIndex = 0;
-            score = 0;
-            showQuestion();
+            startS.classList.add('hide');
+            resultS.classList.add('hide');
+            quizS.classList.remove('hide');
+            currentIdx = 0; score = 0;
+            showQuest();
         }
 
-        function showQuestion() {
-            const currentQuiz = quizData[currentQuestionIndex];
-            progressText.innerText = `Q. ${currentQuestionIndex + 1} / ${quizData.length}`;
-            questionText.innerText = currentQuiz.question;
+        function showQuest() {
+            const data = quizData[currentIdx];
+            document.getElementById('progress-text').innerText = `Q ${currentIdx + 1} / ${quizData.length}`;
+            document.getElementById('question-text').innerText = data.question;
             
-            choicesContainer.innerHTML = '';
-            currentQuiz.choices.forEach((choice, index) => {
-                const button = document.createElement('button');
-                button.innerText = choice;
-                button.classList.add('btn-choice');
-                button.addEventListener('click', () => selectAnswer(index));
-                choicesContainer.appendChild(button);
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+            data.choices.forEach((c, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-choice';
+                btn.innerText = `▶ ${c}`;
+                btn.onclick = () => {
+                    if(i === data.correct) score++;
+                    currentIdx++;
+                    if(currentIdx < quizData.length) showQuest(); else showResult();
+                };
+                container.appendChild(btn);
             });
         }
 
-        function selectAnswer(selectedIndex) {
-            const currentQuiz = quizData[currentQuestionIndex];
-            if (selectedIndex === currentQuiz.correct) {
-                score++;
-            }
-            
-            currentQuestionIndex++;
-            if (currentQuestionIndex < quizData.length) {
-                showQuestion();
-            } else {
-                showResult();
-            }
-        }
-
         function showResult() {
-            quizScreen.classList.add('hide');
-            resultScreen.classList.remove('hide');
+            quizS.classList.add('hide');
+            resultS.classList.remove('hide');
+            document.getElementById('result-score').innerText = `${score} / ${quizData.length}`;
+            const comment = document.getElementById('result-comment');
+            if(score === 5) comment.innerText = "パーフェクト！素晴らしいです！\nスタッフから景品をお受け取りください。";
+            else if(score >= 3) comment.innerText = "高得点です！ご参加ありがとうございます。\nブースのスタッフに声をかけてみてください！";
+            else comment.innerText = "ご参加ありがとうございました！\nもう一度挑戦して満点を目指しましょう！";
             
-            resultScore.innerText = `${score} / ${quizData.length}`;
-            
-            if (score === quizData.length) {
-                resultComment.innerText = "全問正解！素晴らしい！\nスタッフにこの画面を見せて、限定ノベルティをGETしてください！";
-            } else if (score >= 3) {
-                resultComment.innerText = "お見事！高得点です！\nブースのスタッフに声をかけて、記念品を受け取ってね！";
-            } else {
-                resultComment.innerText = "ご参加ありがとうございます！\nもう一度チャレンジしてパーフェクトを目指そう！";
-            }
-
-            autoResetTimer = setTimeout(() => {
-                resetQuiz();
-            }, 30000);
+            timer = setTimeout(resetQuiz, 30000);
         }
 
         function resetQuiz() {
-            if (autoResetTimer) {
-                clearTimeout(autoResetTimer);
-            }
-            resultScreen.classList.add('hide');
-            quizScreen.classList.add('hide');
-            startScreen.classList.remove('hide');
+            if(timer) clearTimeout(timer);
+            resultS.classList.add('hide');
+            quizS.classList.add('hide');
+            startS.classList.remove('hide');
         }
 
-        // PWA Service Worker 登録
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('PWA準備完了:', reg.scope))
-                    .catch(err => console.log('PWA登録失敗:', err));
+                navigator.serviceWorker.register('./sw.js').catch(()=>{});
             });
         }
     </script>
