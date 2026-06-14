@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>展示会クイズラリー</title>
+    <style>
+        /* 全体のリセットと共通スタイル */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none; /* タブレットでの文字選択を禁止 */
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* アプリ全体のカードコンテナ */
+        .quiz-card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 650px;
+            padding: 40px 30px;
+            text-align: center;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 非表示コントロール用のクラス */
+        .hide {
+            display: none !important;
+        }
+
+        /* タイトル・文字の装飾 */
+        h1 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        p.description {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        /* 進行状況（〇問目 / 5問） */
+        .progress {
+            font-size: 1rem;
+            color: #95a5a6;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 問題文 */
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            min-height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ボタンの共通スタイル */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px 20px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background-color: #fff;
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #34495e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        /* タブレットでタップしたときの反応 */
+        .btn:active {
+            transform: scale(0.98);
+            background-color: #ebf5fb;
+            border-color: #3498db;
+            color: #2980b9;
+        }
+
+        /* スタート・リスタート用のアクションボタン */
+        .btn-action {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            text-align: center;
+            font-size: 1.3rem;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        .btn-action:active {
+            background: linear-gradient(135deg, #2980b9, #2471a3);
+            transform: scale(0.98);
+        }
+
+        /* 結果発表画面 */
+        .result-score {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+        .result-comment {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-card">
+        <div id="start-screen">
+            <h1>ブース出展記念クイズ！</h1>
+            <p class="description">当社の技術やサービスに関するクイズです。<br>全5問に挑戦して、ノベルティをゲットしよう！</p>
+            <button class="btn btn-action" onclick="startQuiz()">クイズを始める</button>
+        </div>
+
+        <div id="quiz-screen" class="hide">
+            <div class="progress" id="progress-text">第 1 問 / 全 5 問</div>
+            <div class="question-text" id="question-text">ここに問題文が表示されます</div>
+            <div id="choices-container">
+                </div>
+        </div>
+
+        <div id="result-screen" class="hide">
+            <h1>クイズお疲れ様でした！</h1>
+            <p style="color: #7f8c8d; font-weight: bold;">あなたの正解数は...</p>
+            <div class="result-score" id="result-score">0 / 5</div>
+            <div class="result-comment" id="result-comment">素晴らしい挑戦でした！</div>
+            <button class="btn btn-action" onclick="resetQuiz()">最初に戻る</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // クイズデータの設定（ここを書き換えてください）
+        // ==========================================
+        const quizData = [
+          {
+            question: "当社の主力製品「AI-アシスト」が誕生したのは何年でしょう？",
+            choices: ["2018年", "2021年", "2024年"],
+            correct: 1 // 0から数えるので、2番目の「2021年」が正解
+          },
+          {
+            question: "当社のロゴマークの「青色」が表現しているものはどれ？",
+            choices: ["信頼と技術力", "豊かな海", "スピード感"],
+            correct: 0 // 「信頼と技術力」が正解
+          },
+          {
+            question: "今年、新しくリリースされた新機能の名称は？",
+            choices: ["スマート・アナリティクス", "クラウド・コネクト", "セキュリティ・シールド"],
+            correct: 0 
+          },
+          {
+            question: "当社のオフィスは全国に何拠点あるでしょう？",
+            choices: ["2拠点", "4拠点", "6拠点"],
+            correct: 1
+          },
+          {
+            question: "私たちの企業理念（ミッション）のキーワードは次のうちどれ？",
+            choices: ["未来を創る", "常識を疑う", "テクノロジーで笑顔に"],
+            correct: 2
+          }
+        ];
+
+        // 状態管理変数
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let autoResetTimer = null;
+
+        // 画面要素の取得
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
+        
+        const resultScore = document.getElementById('result-score');
+        const resultComment = document.getElementById('result-comment');
+
+        // クイズ開始
+        function startQuiz() {
+            startScreen.classList.add('hide');
+            resultScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        // 問題の表示
+        function showQuestion() {
+            const currentQuiz = quizData[currentQuestionIndex];
+            
+            // 進行度の更新
+            progressText.innerText = `第 ${currentQuestionIndex + 1} 問 / 全 ${quizData.length} 問`;
+            
+            // 問題文の更新
+            questionText.innerText = currentQuiz.question;
+            
+            // 選択肢のクリアと生成
+            choicesContainer.innerHTML = '';
+            currentQuiz.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.innerText = choice;
+                button.classList.add('btn');
+                // タップされた時のイベント
+                button.addEventListener('click', () => selectAnswer(index));
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        // 回答を選択したときの処理
+        function selectAnswer(selectedIndex) {
+            const currentQuiz = quizData[currentQuestionIndex];
+            
+            // 正誤判定（裏でカウント）
+            if (selectedIndex === currentQuiz.correct) {
+                score++;
+            }
+            
+            // 次の問題へ進むか、結果発表へ
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        // 結果画面の表示
+        function showResult() {
+            quizScreen.classList.add('hide');
+            resultScreen.classList.remove('hide');
+            
+            // スコア表示
+            resultScore.innerText = `${score} / ${quizData.length}`;
+            
+            // スコアに応じたコメントの出し分け
+            if (score === quizData.length) {
+                resultComment.innerText = "全問正解！素晴らしい！ノベルティをGETしてください！";
+            } else if (score >= 3) {
+                resultComment.innerText = "惜しい！高得点です！ブースのスタッフに声をかけてね！";
+            } else {
+                resultComment.innerText = "ご参加ありがとうございます！もう一度挑戦をどうぞ！";
+            }
+
+            // 【展示会用】結果画面で30秒放置されたら自動でスタート画面に戻るタイマー
+            autoResetTimer = setTimeout(() => {
+                resetQuiz();
+            }, 30000); // 30000ミリ秒 = 30秒
+        }
+
+        // クイズのリセット（最初に戻る）
+        function resetQuiz() {
+            // タイマーが動いていたらクリア
+            if (autoResetTimer) {
+                clearTimeout(autoResetTimer);
+            }
+            resultScreen.classList.add('hide');
+            quizScreen.classList.add('hide');
+            startScreen.classList.remove('hide');
+        }
+
+        // Service Workerの登録（PWAの起動）
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA準備完了:', reg.scope))
+                    .catch(err => console.log('PWA登録失敗:', err));
+            });
+        }
+    </script>
+
+</body>
+</html>
