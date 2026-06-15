@@ -267,8 +267,8 @@
             resultS.classList.remove('hide');
             document.getElementById('result-score').innerText = `${score} / ${quizData.length}`;
             const comment = document.getElementById('result-comment');
-            if(score === 5) comment.innerText = "パーフェクト！素晴らしいです！\nスタッフから景品をお受け取りください。";
-            else if(score >= 3) comment.innerText = "高得点です！ご参加ありがとうございます。\nブースのスタッフに声をかけてみてください！";
+            if(score === 5) comment.innerText = "パーフェクト！素晴らしいです！2級に挑戦してみては？";
+            else if(score >= 3) comment.innerText = "3級合格圏内です！すぐにでも受験をおすすめします！";
             else comment.innerText = "ご参加ありがとうございました！\nもう一度挑戦して満点を目指しましょう！";
             
             timer = setTimeout(resetQuiz, 30000);
