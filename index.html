@@ -205,18 +205,18 @@
             correct: 0
           },
           {
-            question: "企業や商品が持つ、目に見えない資産価値（ブランドの持つ資産的価値）を何と呼ぶでしょう？",
+            question: "ブランドが持つ、好悪双方の価値の総計を、資産に例えて何と呼ぶでしょう？",
             choices: ["ブランド・ロイヤルティ", "ブランド・エクイティ", "ブランド・アイデンティティ"],
             correct: 1
           },
           {
-            question: "生産者から消費者まで商品を届けるための一連のルートやネットワークを何と呼ぶでしょう？",
-            choices: ["流通チャネル", "サプライチェーン", "ロジスティクス"],
+            question: "企業が自社製品の販売価格に対して有する影響力を何と呼ぶでしょう？",
+            choices: ["市場支配力", "チャネルパワー", "取引依存度"],
             correct: 0
           },
           {
-            question: "アンケートなどで「数値」として集計・分析できるデータの調査を何と呼ぶでしょう？",
-            choices: ["定性調査", "定量調査", "統計学的リサーチ"],
+            question: "2つの母集団の平均値の差が統計的に優位であるかを検証する統計的検定法を何と呼ぶでしょう？",
+            choices: ["分散分析", "t検定", "カイ二乗検定"],
             correct: 1
           },
           {
@@ -267,8 +267,8 @@
             resultS.classList.remove('hide');
             document.getElementById('result-score').innerText = `${score} / ${quizData.length}`;
             const comment = document.getElementById('result-comment');
-            if(score === 5) comment.innerText = "パーフェクト！素晴らしいです！2級に挑戦してみては？";
-            else if(score >= 3) comment.innerText = "3級合格圏内です！すぐにでも受験をおすすめします！";
+            if(score === 5) comment.innerText = "パーフェクト！3級はきっと余裕で合格ですね。もう2級に挑戦してみては？";
+            else if(score >= 3) comment.innerText = "3級合格圏内です！公式問題集で苦手を克服してすぐにでも受検しましょう！";
             else comment.innerText = "ご参加ありがとうございました！\nもう一度挑戦して満点を目指しましょう！";
             
             timer = setTimeout(resetQuiz, 30000);
