@@ -1,6 +1,6 @@
 {
-  "name": "展示会クイズラリー",
-  "short_name": "展示会クイズ",
+  "name": "検定クイズアプリ",
+  "short_name": "検定クイズ",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f5f7fa",
